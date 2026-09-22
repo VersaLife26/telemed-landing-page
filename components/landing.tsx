@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { AmbientScene } from "@/components/ambient-scene";
 import { DOCTOR, PATIENT } from "@/lib/links";
 
 const WORDS = [
@@ -98,44 +97,39 @@ export function Landing() {
   return (
     <>
       <header className="nav">
-        <a className="mark" href="#top">
-          <span className="mark-dot" aria-hidden />
-          VersaLife
+        <a className="mark" href="#top" aria-label="VersaLife">
+          <img src="/logo.svg" alt="" width={40} height={42} />
         </a>
         <nav className="nav-pills" aria-label="Page">
-          <a href="#top">Home</a>
+          <a className="is-current" href="#top">Home</a>
           <a href="#about">About</a>
           <a href="#services">Services</a>
           <a href="#how">How it works</a>
-          <a href="#faq">FAQ</a>
         </nav>
         <div className="nav-end">
-          <a className="text-link" href={DOCTOR}>
-            Doctor sign in
-          </a>
-          <a className="btn btn-dark" href={`${PATIENT}/login`}>
-            Log in
-          </a>
+          <a className="text-link" href="#faq">FAQ</a>
+          <a className="text-link" href={DOCTOR}>Doctor sign in</a>
+          <a className="btn btn-light" href={`${PATIENT}/login`}>Log in</a>
         </div>
       </header>
 
       <main id="top">
         <section className="hero">
-          <AmbientScene />
           <div className="hero-media">
+            {videoReady ? null : (
+              <img className="hero-still" src="/images/hero-clinician.png" alt="" />
+            )}
             <video
-              className={videoReady ? "hero-video is-ready" : "hero-video"}
+              className="hero-video"
               autoPlay
               muted
               loop
               playsInline
-              poster="/images/hero-clinician.png"
               onCanPlay={() => setVideoReady(true)}
+              onLoadedData={() => setVideoReady(true)}
             >
               <source src="/video/hero.mp4" type="video/mp4" />
             </video>
-            <img className="hero-still" src="/images/hero-clinician.png" alt="" />
-            <div className="hero-shade" />
           </div>
           <div className="hero-copy">
             <p className="eyebrow">Care, booked and on the record</p>
@@ -223,9 +217,12 @@ export function Landing() {
           </div>
           <div className="slab">
             <div className="slab-bar">
-              <div>
-                <strong>Consultation</strong>
-                <span>Your booked time</span>
+              <div className="slab-brand">
+                <img src="/logo.svg" alt="" width={28} height={30} />
+                <div>
+                  <strong>Consultation</strong>
+                  <span>Your booked time</span>
+                </div>
               </div>
               <div className="slab-meta">
                 <span className="pill">Live</span>
@@ -325,7 +322,10 @@ export function Landing() {
       </main>
 
       <footer>
-        <span>VersaLife Health</span>
+        <a className="mark" href="#top">
+          <img src="/logo.svg" alt="" width={28} height={30} />
+          VersaLife Health
+        </a>
         <a href={`${PATIENT}/login`}>Patient app</a>
         <a href={DOCTOR}>Doctor app</a>
         <a href="#faq">FAQ</a>

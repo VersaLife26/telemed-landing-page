@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Manrope, Plus_Jakarta_Sans } from "next/font/google";
+import { Fraunces, Manrope } from "next/font/google";
 import "./globals.css";
 
-const display = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-display" });
+const display = Fraunces({ subsets: ["latin"], variable: "--font-display" });
 const body = Manrope({ subsets: ["latin"], variable: "--font-body" });
 
 export const metadata: Metadata = {

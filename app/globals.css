@@ -8,7 +8,7 @@
   --mint: #50c898;
   --page: oklch(98.5% 0.006 258);
   --sand: oklch(94% 0.04 95);
-  --display: var(--font-display), "Plus Jakarta Sans", "Segoe UI", sans-serif;
+  --display: var(--font-display), Fraunces, Georgia, serif;
   --body: var(--font-body), Manrope, "Segoe UI", sans-serif;
   --radius: 28px;
 }
@@ -31,28 +31,38 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .nav {
   position: fixed;
   z-index: 20;
-  top: 18px;
+  top: 22px;
   left: 50%;
   transform: translateX(-50%);
-  width: min(1120px, calc(100% - 28px));
+  width: min(1120px, calc(100% - 40px));
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 8px 8px 8px 16px;
-  border-radius: 999px;
-  background: oklch(99% 0.002 258 / 0.72);
-  border: 1px solid oklch(99% 0.002 258 / 0.7);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 10px 40px oklch(24% 0.05 258 / 0.12);
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
 }
-.mark { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 700; text-decoration: none; }
-.mark-dot { width: 14px; height: 14px; border-radius: 50%; background: linear-gradient(140deg, var(--blue-600), var(--mint)); }
-.nav-pills { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: oklch(94% 0.01 258 / 0.7); }
-.nav-pills a { text-decoration: none; font-size: 14px; padding: 8px 14px; border-radius: 999px; }
-.nav-pills a:hover { background: white; }
-.nav-end { display: flex; align-items: center; gap: 12px; }
-.text-link { font-size: 14px; text-decoration: none; }
+.mark { display: flex; align-items: center; text-decoration: none; }
+.mark img { width: 42px; height: 44px; object-fit: contain; display: block; filter: drop-shadow(0 2px 8px oklch(17% 0.04 258 / 0.25)); }
+.nav-pills { display: flex; align-items: center; gap: 4px; }
+.nav-pills a {
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: white;
+}
+.nav-pills a.is-current {
+  background: white;
+  color: var(--ink);
+  box-shadow: 0 6px 20px oklch(17% 0.04 258 / 0.12);
+}
+.nav-pills a:not(.is-current):hover { background: oklch(99% 0.002 258 / 0.28); }
+.nav-end { display: flex; align-items: center; gap: 14px; }
+.text-link { font-size: 15px; font-weight: 600; text-decoration: none; color: white; }
 
 .btn {
   display: inline-flex;
@@ -68,7 +78,11 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 .btn-dark { background: var(--ink); color: white; }
 .btn-light { background: white; color: var(--ink); }
-.btn-ghost { background: transparent; color: white; border-color: oklch(99% 0.002 258 / 0.45); }
+.btn-ghost {
+  background: transparent;
+  color: white;
+  border-color: oklch(99% 0.002 258 / 0.85);
+}
 .center { margin: 28px auto 0; width: fit-content; }
 
 .hero {
@@ -89,24 +103,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  animation: drift 28s ease-in-out infinite alternate;
+  object-position: center center;
 }
-.hero-video { opacity: 0; }
-.hero-video.is-ready { opacity: 1; }
-.hero-shade {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, oklch(24% 0.08 258 / 0.25), oklch(17% 0.06 258 / 0.72)),
-    radial-gradient(60% 50% at 70% 40%, transparent, oklch(17% 0.08 258 / 0.35));
-}
+.hero-video { z-index: 1; }
 .hero-copy { position: relative; z-index: 3; max-width: 760px; }
 .eyebrow {
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   font-size: 12px;
   font-weight: 700;
-  color: var(--mint);
+  color: white;
   margin: 0 0 12px;
 }
 .hero h1, .how h2, .benefits h2, .faq h2, .close h2, .stage h2 {
@@ -116,21 +122,35 @@ button, a { -webkit-tap-highlight-color: transparent; }
   line-height: 1.02;
   margin: 0;
 }
-.hero h1 { font-size: clamp(40px, 6vw, 76px); max-width: 14ch; }
-.lede { max-width: 46ch; font-size: 18px; color: oklch(96% 0.01 258 / 0.88); }
+.hero h1 {
+  font-size: clamp(44px, 6vw, 80px);
+  max-width: 14ch;
+  font-weight: 520;
+}
+.lede {
+  max-width: 42ch;
+  font-size: 18px;
+  font-weight: 550;
+  color: white;
+}
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
 .scroll-hint {
   position: absolute;
   z-index: 3;
   right: 6vw;
   bottom: 36px;
-  color: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: white;
+  color: var(--ink);
   text-decoration: none;
-  font-size: 13px;
+  font-size: 0;
   display: grid;
-  justify-items: center;
-  gap: 4px;
+  place-items: center;
+  box-shadow: 0 8px 24px oklch(17% 0.04 258 / 0.12);
 }
+.scroll-hint span { font-size: 18px; }
 
 .ribbon { padding: 72px 0 24px; background: oklch(96% 0.02 150); }
 .ribbon > p { text-align: center; max-width: 46ch; margin: 0 auto 36px; color: var(--muted); }
@@ -214,6 +234,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 .slab:hover { transform: perspective(1200px) rotateX(2deg) rotateY(-2deg) translateY(-6px); }
 .slab-bar, .slab-meta, .slab-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.slab-brand { display: flex; align-items: center; gap: 10px; }
+.slab-brand img { width: 28px; height: 30px; object-fit: contain; }
 .slab-bar strong { display: block; font-family: var(--display); }
 .slab-bar span, .slab-controls span { font-size: 13px; color: var(--muted); }
 .pill { background: oklch(90% 0.08 155); color: oklch(32% 0.06 160); border-radius: 999px; padding: 6px 10px; font-weight: 700; }
@@ -303,6 +325,7 @@ footer a { text-decoration: none; }
 }
 
 @media (max-width: 980px) {
+  .hero-video, .hero-still { object-position: 34% 42%; }
   .nav-pills, .text-link { display: none; }
   .service-grid, .stage, .how, .benefits ul, .polaroids { grid-template-columns: 1fr; }
   .tilt-left, .tilt-right { transform: none; }
