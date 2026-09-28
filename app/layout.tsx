@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
-import { Fraunces, Manrope } from "next/font/google";
+import { Geist, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
-const display = Fraunces({ subsets: ["latin"], variable: "--font-display" });
-const body = Manrope({ subsets: ["latin"], variable: "--font-body" });
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
+const serif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: "italic",
+  variable: "--font-serif",
+});
 
 export const metadata: Metadata = {
   title: "VersaLife — book a doctor visit",
@@ -13,8 +18,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable}`}>
-      <body style={{ fontFamily: "var(--font-body), Manrope, sans-serif" }}>{children}</body>
+    <html lang="en" className={`${geist.variable} ${serif.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }
