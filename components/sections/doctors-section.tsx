@@ -4,6 +4,7 @@ import { useCallback, useRef } from "react";
 import { LazySectionVideo } from "@/components/lazy-section-video";
 import { useScrollStory } from "@/components/use-scroll-story";
 import { applyDoctorsPanelBeats } from "@/lib/doctors-beat-motion";
+import { scrollStepVh } from "@/lib/scroll-step-vh";
 
 const POINTS = [
   {
@@ -28,7 +29,7 @@ export function DoctorsSection() {
     pinSelector: ".story-pin",
     liveClass: "doctors--live",
     scrub: 0.55,
-    stepVh: 78,
+    stepVh: scrollStepVh() + 6,
     applyBeats: applyDoctorsPanelBeats,
   });
 

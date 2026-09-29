@@ -3,6 +3,7 @@
 import { type RefObject, useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { scrollStepVh } from "@/lib/scroll-step-vh";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -43,7 +44,7 @@ type Options = {
 };
 
 export function useScrollStory(root: RefObject<HTMLElement | null>, beatCount: number, options: Options) {
-  const { pinSelector, liveClass, stepVh = 72, scrub = 0.85, applyBeats = applyScrollBeats } = options;
+  const { pinSelector, liveClass, stepVh = scrollStepVh(), scrub = 0.85, applyBeats = applyScrollBeats } = options;
   const applyRef = useRef(applyBeats);
   applyRef.current = applyBeats;
 

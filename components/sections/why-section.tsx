@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { PulseRibbon } from "@/components/scenes/pulse-ribbon";
+import { scrollStepVh } from "@/lib/scroll-step-vh";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -76,7 +77,7 @@ export function WhySection() {
       ScrollTrigger.create({
         trigger: node,
         start: "top top",
-        end: `+=${Math.round(BEAT_COUNT * 72)}%`,
+        end: `+=${Math.round(BEAT_COUNT * scrollStepVh())}%`,
         pin: ".why-pin",
         scrub: 0.85,
         anticipatePin: 1,

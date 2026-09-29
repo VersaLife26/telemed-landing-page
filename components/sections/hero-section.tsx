@@ -5,6 +5,8 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { DOCTOR, PATIENT } from "@/lib/links";
 import { waitForSplashDone } from "@/lib/splash";
+import { MobileMenuTrigger } from "@/components/mobile-menu";
+import { scrollStepVh } from "@/lib/scroll-step-vh";
 import { HERO_VIDEO } from "@/lib/warm-videos";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -152,7 +154,7 @@ export function HeroSection() {
         scrollTrigger: {
           trigger: node,
           start: "top top",
-          end: "+=140%",
+          end: `+=${Math.round(scrollStepVh() * 1.95)}%`,
           scrub: 0.65,
           pin: ".hero-pin",
           anticipatePin: 1,
@@ -191,6 +193,7 @@ export function HeroSection() {
             <a className="btn btn-light" href={`${PATIENT}/login`}>
               Log in
             </a>
+            <MobileMenuTrigger className="mobile-menu-trigger nav-menu-trigger" />
           </div>
         </header>
         <div className="hero-film" ref={filmRef}>

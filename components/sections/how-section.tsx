@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollVideo, prefetchClip, primeClip } from "@/components/scroll-video";
+import { scrollStepVh } from "@/lib/scroll-step-vh";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -61,26 +62,31 @@ export function HowSection() {
   const [dragPx, setDragPx] = useState(0);
   const [dragging, setDragging] = useState(false);
 
-  const waitForClipReady = useCallback((node: HTMLElement, index: number, onReady: () => void) => {
-    const video = node.querySelectorAll<HTMLElement>(".clip")[index]?.querySelector("video");
-    if (!video) return;
+  const waitForClipReady = useCallback(
+    (node: HTMLElement, index: number, onReady: () => void, keepUi = false) => {
+      const video = node.querySelectorAll<HTMLElement>(".clip")[index]?.querySelector("video");
+      if (!video) return;
 
-    const reveal = () => {
-      if (stepRef.current !== index) return;
-      node.classList.add("how--media-ready", "how--steps-visible");
-      onReady();
-    };
+      const reveal = () => {
+        if (stepRef.current !== index) return;
+        node.classList.add("how--media-ready", "how--steps-visible");
+        onReady();
+      };
 
-    if (video.readyState >= 2) {
-      reveal();
-      return;
-    }
+      if (video.readyState >= 2) {
+        reveal();
+        return;
+      }
 
-    node.classList.remove("how--media-ready", "how--steps-visible");
-    video.addEventListener("loadeddata", reveal, { once: true });
-    video.addEventListener("playing", reveal, { once: true });
-    video.addEventListener("error", reveal, { once: true });
-  }, []);
+      if (!keepUi) {
+        node.classList.remove("how--media-ready", "how--steps-visible");
+      }
+      video.addEventListener("loadeddata", reveal, { once: true });
+      video.addEventListener("playing", reveal, { once: true });
+      video.addEventListener("error", reveal, { once: true });
+    },
+    [],
+  );
 
   const updateProgressUi = useCallback((_node: HTMLElement, _index: number) => {
     /* Step position is shown in the carousel index only (no progress bars). */
@@ -96,8 +102,13 @@ export function HowSection() {
         return;
       }
 
+      const fromScroll = source === "scroll";
       stepRef.current = index;
-      node.classList.remove("how--media-ready", "how--steps-visible");
+      if (!fromScroll) {
+        node.classList.remove("how--media-ready", "how--steps-visible");
+      } else {
+        node.classList.add("how--live", "how--steps-visible");
+      }
       setStep(index);
       setDragPx(0);
 
@@ -112,6 +123,7 @@ export function HowSection() {
 
       primeClip(clips[index]);
       prefetchClip(clips[index + 1]);
+      prefetchClip(clips[index - 1]);
       videosRef.current.forEach((video, i) => {
         if (i === index) video.play().catch(() => undefined);
         else video.pause();
@@ -119,17 +131,23 @@ export function HowSection() {
 
       updateProgressUi(node, index);
 
-      waitForClipReady(node, index, () => {
+      const showActive = () => {
         const active = clips[index];
         if (!active) return;
-        gsap.to(active, {
-          opacity: 1,
-          scale: 1,
-          duration: 0.45,
-          ease: "power2.out",
-          visibility: "visible",
-        });
-      });
+        if (fromScroll) {
+          gsap.set(active, { opacity: 1, scale: 1, visibility: "visible" });
+        } else {
+          gsap.to(active, {
+            opacity: 1,
+            scale: 1,
+            duration: 0.45,
+            ease: "power2.out",
+            visibility: "visible",
+          });
+        }
+      };
+
+      waitForClipReady(node, index, showActive, fromScroll);
 
       if (source !== "scroll") {
         fromScrollRef.current = true;
@@ -203,7 +221,7 @@ export function HowSection() {
       scrollStRef.current = ScrollTrigger.create({
         trigger: node,
         start: "top top",
-        end: "+=340%",
+        end: `+=${Math.round(STEP_COUNT * scrollStepVh() * 1.02)}%`,
         pin: ".how-pin",
         scrub: 0.9,
         anticipatePin: 1,
@@ -216,13 +234,10 @@ export function HowSection() {
         },
         onLeaveBack: () => resetHow(),
         onLeave: () => resetHow(),
-        onToggle: (self) => {
-          if (self.isActive) return;
-          resetHow();
-        },
         onUpdate: (self) => {
           if (!self.isActive || fromScrollRef.current || dragRef.current.active) return;
-          const index = clampStep(Math.floor(self.progress * STEP_COUNT));
+          const scaled = self.progress * STEP_COUNT;
+          const index = clampStep(Math.floor(Math.min(scaled, STEP_COUNT - 0.001)));
           if (index !== stepRef.current) setActiveStep(index, "scroll");
           else updateProgressUi(node, index);
         },

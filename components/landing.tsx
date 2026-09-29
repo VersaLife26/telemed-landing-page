@@ -11,6 +11,7 @@ import { DoctorsSection } from "@/components/sections/doctors-section";
 import { FaqSection } from "@/components/sections/faq-section";
 import { StartSection } from "@/components/sections/start-section";
 import { ChaptersNav } from "@/components/chapters-nav";
+import { MobileMenuProvider } from "@/components/mobile-menu";
 import { HeroSplash } from "@/components/hero-splash";
 import { SiteFooter } from "@/components/site-footer";
 import { HERO_VIDEO, prefetchVideoUrls, STORY_CLIPS } from "@/lib/warm-videos";
@@ -38,7 +39,7 @@ export function Landing() {
   }, []);
 
   return (
-    <>
+    <MobileMenuProvider>
       <HeroSplash />
       <HeroSection />
       <ChaptersNav />
@@ -49,6 +50,6 @@ export function Landing() {
       <FaqSection />
       <StartSection />
       <SiteFooter />
-    </>
+    </MobileMenuProvider>
   );
 }

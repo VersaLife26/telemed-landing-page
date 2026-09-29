@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { scrollStepVh } from "@/lib/scroll-step-vh";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -38,6 +39,8 @@ function applyProgress(node: HTMLElement, progress: number) {
   const scaled = progress * count;
   const index = Math.min(count - 1, Math.max(0, Math.floor(Math.min(scaled, count - 0.001))));
   const blend = scaled - index;
+  const mobile = window.matchMedia("(max-width: 800px)").matches;
+  const swap = mobile ? 0.42 : 1;
 
   const frames = node.querySelectorAll<HTMLElement>(".what-frame");
   const images = node.querySelectorAll<HTMLElement>(".photo-seq img");
@@ -47,22 +50,42 @@ function applyProgress(node: HTMLElement, progress: number) {
 
   frames.forEach((frame, i) => {
     let opacity = 0;
-    let y = 40;
-    if (i === index) {
+    let y = mobile ? 0 : 40;
+
+    if (mobile) {
+      if (i === index) {
+        opacity = blend < swap ? 1 : 0;
+      } else if (i === index + 1) {
+        opacity = blend >= swap ? 1 : 0;
+      }
+    } else if (i === index) {
       opacity = 1 - blend;
       y = -blend * 32;
     } else if (i === index + 1) {
       opacity = blend;
       y = 40 * (1 - blend);
     }
-    gsap.set(frame, { opacity, y, pointerEvents: opacity > 0.45 ? "auto" : "none" });
+
+    const visible = opacity > 0.02;
+    gsap.set(frame, {
+      opacity,
+      y,
+      visibility: visible ? "visible" : "hidden",
+      pointerEvents: opacity > 0.45 ? "auto" : "none",
+    });
+    frame.setAttribute("aria-hidden", visible ? "false" : "true");
   });
 
   images.forEach((img, i) => {
     let opacity = 0;
     let scale = 1.08;
-    let x = 48;
-    if (i === index) {
+    let x = mobile ? 0 : 48;
+
+    if (mobile) {
+      if (i === index) opacity = blend < swap ? 1 : 0;
+      else if (i === index + 1) opacity = blend >= swap ? 1 : 0;
+      scale = 1;
+    } else if (i === index) {
       opacity = 1 - blend * 0.55;
       scale = 1 + blend * 0.04;
       x = blend * 24;
@@ -75,6 +98,7 @@ function applyProgress(node: HTMLElement, progress: number) {
       scale = 1.02;
       x = -20;
     }
+
     gsap.set(img, { opacity, scale, x, visibility: opacity > 0.02 ? "visible" : "hidden" });
   });
 
@@ -88,7 +112,6 @@ function applyProgress(node: HTMLElement, progress: number) {
   });
 
   if (rail) {
-    const mobile = window.matchMedia("(max-width: 800px)").matches;
     if (mobile) {
       gsap.set(rail, {
         scaleX: Math.max(0.08, progress),
@@ -131,7 +154,7 @@ export function WhatSection() {
       ScrollTrigger.create({
         trigger: node,
         start: "top top",
-        end: "+=220%",
+        end: `+=${Math.round(FRAMES.length * scrollStepVh() * 1.02)}%`,
         pin: ".what-pin",
         scrub: 0.85,
         anticipatePin: 1,

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
@@ -9,6 +9,12 @@ const serif = Instrument_Serif({
   style: "italic",
   variable: "--font-serif",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: "VersaLife — book a doctor visit",

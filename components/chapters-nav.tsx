@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { MobileMenuTrigger } from "@/components/mobile-menu";
 import { PATIENT } from "@/lib/links";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -100,6 +101,7 @@ export function ChaptersNav() {
   return (
     <nav className="chapters" aria-label="On this page" ref={root}>
       <div className="chapters-shell">
+        <MobileMenuTrigger className="mobile-menu-trigger chapters-menu-trigger" label="Open page menu" />
         <div className="chapters-track" ref={trackRef}>
           <span className="chapters-glider" ref={gliderRef} aria-hidden />
           {LINKS.map((link, i) => (
