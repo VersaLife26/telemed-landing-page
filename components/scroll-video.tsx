@@ -2,23 +2,42 @@
 
 export type Clip = { src: string; fallback: string; alt: string };
 
-/** All clips stay mounted so scroll can crossfade and scrub without remounting. */
+/** Clips load when activated; no posters on idle videos. */
 export function ScrollVideo({ clips }: { clips: Clip[] }) {
   return (
     <div className="media-stack">
-      {clips.map((clip, i) => (
-        <div className={i === 0 ? "clip is-on" : "clip"} key={clip.src}>
-          <video
-            src={clip.src}
-            muted
-            playsInline
-            preload="auto"
-            poster={clip.fallback}
-            onError={(event) => event.currentTarget.parentElement?.classList.add("is-failed")}
-          />
+      {clips.map((clip) => (
+        <div className="clip" key={clip.src} data-src={clip.src}>
+          <video muted playsInline preload="none" />
           <img src={clip.fallback} alt={clip.alt} />
         </div>
       ))}
     </div>
   );
+}
+
+function attachSrc(video: HTMLVideoElement, src: string, preload: "auto" | "metadata") {
+  if (video.getAttribute("src")) return;
+  video.preload = preload;
+  video.setAttribute("src", src);
+  video.load();
+}
+
+/** Buffer a clip off-screen so the next step starts faster. */
+export function prefetchClip(clipEl: HTMLElement | undefined) {
+  if (!clipEl) return;
+  const video = clipEl.querySelector("video");
+  const src = clipEl.getAttribute("data-src");
+  if (!video || !src) return;
+  attachSrc(video, src, "auto");
+  video.pause();
+}
+
+export function primeClip(clipEl: HTMLElement | undefined) {
+  if (!clipEl) return;
+  const video = clipEl.querySelector("video");
+  const src = clipEl.getAttribute("data-src");
+  if (!video || !src) return;
+  attachSrc(video, src, "auto");
+  video.play().catch(() => undefined);
 }

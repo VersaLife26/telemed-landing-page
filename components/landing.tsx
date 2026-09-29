@@ -10,7 +10,10 @@ import { WhySection } from "@/components/sections/why-section";
 import { DoctorsSection } from "@/components/sections/doctors-section";
 import { FaqSection } from "@/components/sections/faq-section";
 import { StartSection } from "@/components/sections/start-section";
-import { PATIENT, DOCTOR } from "@/lib/links";
+import { ChaptersNav } from "@/components/chapters-nav";
+import { HeroSplash } from "@/components/hero-splash";
+import { SiteFooter } from "@/components/site-footer";
+import { HERO_VIDEO, prefetchVideoUrls, STORY_CLIPS } from "@/lib/warm-videos";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -19,41 +22,33 @@ export function Landing() {
     const refresh = () => ScrollTrigger.refresh();
     const id = requestAnimationFrame(refresh);
     window.addEventListener("load", refresh);
+
+    prefetchVideoUrls([HERO_VIDEO]);
+    const warm = () => prefetchVideoUrls([...STORY_CLIPS]);
+    const hero = document.querySelector<HTMLVideoElement>(".hero-film video");
+    if (hero && hero.readyState >= 2) warm();
+    else hero?.addEventListener("loadeddata", warm, { once: true });
+    const fallback = window.setTimeout(warm, 1200);
+
     return () => {
       cancelAnimationFrame(id);
+      window.clearTimeout(fallback);
       window.removeEventListener("load", refresh);
     };
   }, []);
 
   return (
     <>
+      <HeroSplash />
       <HeroSection />
-      <nav className="chapters" aria-label="On this page">
-        <a href="#what">What it is</a>
-        <a href="#how">How to use</a>
-        <a href="#why">Why VersaLife</a>
-        <a href="#doctors">For doctors</a>
-        <a href="#faq">Questions</a>
-        <a className="btn btn-ink" href={`${PATIENT}/register`}>
-          Get started
-          <span className="arrow" aria-hidden>→</span>
-        </a>
-      </nav>
+      <ChaptersNav />
       <WhatSection />
       <HowSection />
       <WhySection />
       <DoctorsSection />
       <FaqSection />
       <StartSection />
-      <footer>
-        <a className="mark" href="#top">
-          <img src="/logo.svg" alt="" width={28} height={30} />
-          VersaLife Health
-        </a>
-        <a href={`${PATIENT}/login`}>Patient app</a>
-        <a href={DOCTOR}>Doctor app</a>
-        <a href="#faq">FAQ</a>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

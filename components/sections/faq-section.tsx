@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef } from "react";
+import { LazySectionVideo } from "@/components/lazy-section-video";
+import { useScrollStory } from "@/components/use-scroll-story";
 
 const FAQS = [
   {
@@ -21,27 +23,46 @@ const FAQS = [
   },
 ];
 
+const BEAT_COUNT = 1 + FAQS.length;
+
 export function FaqSection() {
-  const [open, setOpen] = useState(0);
+  const root = useRef<HTMLElement>(null);
+  useScrollStory(root, BEAT_COUNT, { pinSelector: ".story-pin", liveClass: "faq--live" });
+
+  const onMediaReady = useCallback(() => {
+    root.current?.classList.add("story--media-ready");
+  }, []);
 
   return (
-    <section className="faq" id="faq">
-      <h2>Questions</h2>
-      <div>
-        {FAQS.map((item, i) => {
-          const on = open === i;
-          return (
-            <div key={item.q} className={on ? "item open" : "item"}>
-              <button type="button" aria-expanded={on} onClick={() => setOpen(on ? -1 : i)}>
-                {item.q}
-                <span aria-hidden>{on ? "–" : "+"}</span>
-              </button>
-              <div className="item-panel">
-                <p>{item.a}</p>
-              </div>
+    <section className="story-scroll faq" id="faq" ref={root}>
+      <div className="story-pin">
+        <div className="story-media">
+          <LazySectionVideo src="/video/patient-home.mp4" className="story-video" onReady={onMediaReady} />
+        </div>
+        <div className="story-shade" aria-hidden />
+
+        <div className="story-ui">
+          <article className="story-beat is-left" aria-hidden>
+            <div className="story-caption story-caption-intro">
+              <p className="story-eyebrow">Questions</p>
+              <h2>Answers before you book.</h2>
             </div>
-          );
-        })}
+          </article>
+
+          {FAQS.map((item, i) => (
+            <article className={i % 2 === 0 ? "story-beat is-right" : "story-beat is-left"} key={item.q} aria-hidden>
+              <div className="story-caption">
+                <p className="story-eyebrow">Questions</p>
+                <h3>{item.q}</h3>
+                <p className="story-body">{item.a}</p>
+              </div>
+            </article>
+          ))}
+
+          <p className="story-step-index" aria-live="polite">
+            01 / 0{BEAT_COUNT}
+          </p>
+        </div>
       </div>
     </section>
   );

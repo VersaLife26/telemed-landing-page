@@ -33,11 +33,84 @@ const FRAMES = [
   },
 ];
 
-function showFrame(node: HTMLElement, index: number) {
-  node.querySelectorAll<HTMLElement>(".what-frame, .photo-seq img").forEach((el) => {
-    const group = el.classList.contains("what-frame") ? ".what-frame" : ".photo-seq img";
-    const position = Array.from(node.querySelectorAll(group)).indexOf(el);
-    el.classList.toggle("is-on", position === index);
+function applyProgress(node: HTMLElement, progress: number) {
+  const count = FRAMES.length;
+  const scaled = progress * count;
+  const index = Math.min(count - 1, Math.max(0, Math.floor(Math.min(scaled, count - 0.001))));
+  const blend = scaled - index;
+
+  const frames = node.querySelectorAll<HTMLElement>(".what-frame");
+  const images = node.querySelectorAll<HTMLElement>(".photo-seq img");
+  const dots = node.querySelectorAll<HTMLElement>(".what-dot");
+  const rail = node.querySelector<HTMLElement>(".what-rail-fill");
+  const counter = node.querySelector<HTMLElement>(".what-counter");
+
+  frames.forEach((frame, i) => {
+    let opacity = 0;
+    let y = 40;
+    if (i === index) {
+      opacity = 1 - blend;
+      y = -blend * 32;
+    } else if (i === index + 1) {
+      opacity = blend;
+      y = 40 * (1 - blend);
+    }
+    gsap.set(frame, { opacity, y, pointerEvents: opacity > 0.45 ? "auto" : "none" });
+  });
+
+  images.forEach((img, i) => {
+    let opacity = 0;
+    let scale = 1.08;
+    let x = 48;
+    if (i === index) {
+      opacity = 1 - blend * 0.55;
+      scale = 1 + blend * 0.04;
+      x = blend * 24;
+    } else if (i === index + 1) {
+      opacity = blend;
+      scale = 1.08 - blend * 0.08;
+      x = 48 * (1 - blend);
+    } else if (i < index) {
+      opacity = 0;
+      scale = 1.02;
+      x = -20;
+    }
+    gsap.set(img, { opacity, scale, x, visibility: opacity > 0.02 ? "visible" : "hidden" });
+  });
+
+  dots.forEach((dot, i) => {
+    const on = i === index;
+    const next = i === index + 1;
+    gsap.set(dot, {
+      scale: on ? 1 : next ? 0.85 + blend * 0.15 : 0.85,
+      opacity: on ? 1 : next ? 0.45 + blend * 0.55 : 0.35,
+    });
+  });
+
+  if (rail) {
+    const mobile = window.matchMedia("(max-width: 800px)").matches;
+    if (mobile) {
+      gsap.set(rail, {
+        scaleX: Math.max(0.08, progress),
+        scaleY: 1,
+        transformOrigin: "left center",
+      });
+    } else {
+      gsap.set(rail, {
+        scaleY: Math.max(0.08, progress),
+        scaleX: 1,
+        transformOrigin: "top center",
+      });
+    }
+  }
+  if (counter) counter.textContent = `0${index + 1}`;
+}
+
+function resetWhat(node: HTMLElement) {
+  node.classList.remove("what--live");
+  applyProgress(node, 0);
+  node.querySelectorAll<HTMLElement>(".photo-seq img").forEach((img) => {
+    gsap.set(img, { visibility: "hidden", opacity: 0 });
   });
 }
 
@@ -49,27 +122,27 @@ export function WhatSection() {
     if (!node) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) {
-      showFrame(node, FRAMES.length - 1);
+      node.classList.add("what--live");
+      applyProgress(node, 1);
       return;
     }
 
     const ctx = gsap.context(() => {
-      let current = 0;
       ScrollTrigger.create({
         trigger: node,
         start: "top top",
-        end: "+=180%",
+        end: "+=220%",
         pin: ".what-pin",
-        scrub: 0.6,
+        scrub: 0.85,
         anticipatePin: 1,
+        onEnter: () => {
+          node.classList.add("what--live");
+          applyProgress(node, 0);
+        },
+        onLeaveBack: () => resetWhat(node),
         onUpdate: (self) => {
-          const index = Math.min(
-            FRAMES.length - 1,
-            Math.floor(Math.min(self.progress * FRAMES.length, FRAMES.length - 0.001)),
-          );
-          if (index === current) return;
-          current = index;
-          showFrame(node, index);
+          if (!self.isActive) return;
+          applyProgress(node, self.progress);
         },
       });
     }, node);
@@ -80,27 +153,48 @@ export function WhatSection() {
   return (
     <section className="what" id="what" ref={root}>
       <div className="what-pin">
-        <div className="what-copy">
-          {FRAMES.map((frame, i) => (
-            <div className={i === 0 ? "what-frame is-on" : "what-frame"} key={frame.src}>
-              <p className="eyebrow">{frame.kicker}</p>
-              <h2>{frame.title}</h2>
-              <p>{frame.body}</p>
+        <div className="what-layout">
+          <div className="what-copy-wrap">
+            <div className="what-meta">
+              <div className="what-rail" aria-hidden>
+                <span className="what-rail-fill" />
+              </div>
+              <div className="what-dots" aria-hidden>
+                {FRAMES.map((frame) => (
+                  <span className="what-dot" key={frame.src} />
+                ))}
+              </div>
+              <p className="what-counter" aria-live="polite">
+                01
+              </p>
             </div>
-          ))}
-        </div>
-        <div className="photo-seq">
-          {FRAMES.map((frame, i) => (
-            <img
-              key={frame.src}
-              src={frame.src}
-              alt={i === 0 ? frame.alt : ""}
-              className={i === 0 ? "is-on" : ""}
-              onError={(event) => {
-                event.currentTarget.src = frame.fallback;
-              }}
-            />
-          ))}
+            <div className="what-copy">
+              {FRAMES.map((frame) => (
+                <div className="what-frame" key={frame.src}>
+                  <p className="eyebrow">{frame.kicker}</p>
+                  <h2>{frame.title}</h2>
+                  <p>{frame.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="what-visual">
+            <div className="what-visual-glow" aria-hidden />
+            <div className="photo-seq">
+              {FRAMES.map((frame) => (
+                <img
+                  key={frame.src}
+                  src={frame.src}
+                  alt={frame.alt}
+                  loading="lazy"
+                  decoding="async"
+                  onError={(event) => {
+                    event.currentTarget.src = frame.fallback;
+                  }}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

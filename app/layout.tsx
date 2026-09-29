@@ -18,8 +18,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} ${serif.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={`${geist.variable} ${serif.variable}`} suppressHydrationWarning>
+      <head>
+        <link rel="preload" href="/video/hero.mp4" as="fetch" type="video/mp4" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var k="versalife-hero-splash";if(sessionStorage.getItem(k))document.documentElement.classList.add("splash-seen");}catch(e){}})();`,
+          }}
+        />
+      </head>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
