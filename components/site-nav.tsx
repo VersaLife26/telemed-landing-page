@@ -27,11 +27,6 @@ export function SiteNav() {
     glider.style.width = `${linkBox.width}px`;
     glider.style.transform = `translate3d(${x}px, 0, 0)`;
 
-    if (window.matchMedia("(max-width: 800px)").matches) {
-      const pad = 8;
-      const scrollLeft = link.offsetLeft - (track.clientWidth - linkBox.width) / 2;
-      track.scrollTo({ left: Math.max(0, scrollLeft - pad), behavior: "smooth" });
-    }
   }, []);
 
   const syncFromScroll = useCallback(() => {
@@ -109,20 +104,35 @@ export function SiteNav() {
                 linkRefs.current[i] = node;
               }}
               className={active === link.id ? "site-nav-link is-active" : "site-nav-link"}
+              aria-label={link.label}
               aria-current={active === link.id ? "location" : undefined}
               onClick={(event) => jump(event, link.href)}
             >
-              {"brand" in link && link.brand ? (
-                <>
-                  Why{" "}
-                  <span className="site-nav-wordmark">
-                    <span className="is-navy">Versa</span>
-                    <span className="is-mint">Life</span>
-                  </span>
-                </>
-              ) : (
-                link.label
-              )}
+              <span className="site-nav-label site-nav-label--full" aria-hidden>
+                {"brand" in link && link.brand ? (
+                  <>
+                    Why{" "}
+                    <span className="site-nav-wordmark">
+                      <span className="is-navy">Versa</span>
+                      <span className="is-mint">Life</span>
+                    </span>
+                  </>
+                ) : (
+                  link.label
+                )}
+              </span>
+              <span className="site-nav-label site-nav-label--short" aria-hidden>
+                {"brand" in link && link.brand ? (
+                  <>
+                    Why{" "}
+                    <span className="site-nav-wordmark">
+                      <span className="is-mint">Life</span>
+                    </span>
+                  </>
+                ) : (
+                  link.shortLabel
+                )}
+              </span>
             </a>
           ))}
         </nav>

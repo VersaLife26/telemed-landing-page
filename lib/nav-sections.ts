@@ -1,8 +1,8 @@
 export const NAV_SECTIONS = [
-  { id: "what", href: "#what", label: "What it is" },
-  { id: "how", href: "#how", label: "How to use" },
-  { id: "why", href: "#why", label: "Why VersaLife", brand: true as const },
-  { id: "doctors", href: "#doctors", label: "For doctors" },
+  { id: "what", href: "#what", label: "What it is", shortLabel: "What" },
+  { id: "how", href: "#how", label: "How to use", shortLabel: "How" },
+  { id: "why", href: "#why", label: "Why VersaLife", shortLabel: "Why", brand: true as const },
+  { id: "doctors", href: "#doctors", label: "For doctors", shortLabel: "Doctors" },
 ] as const;
 
 export type NavSectionId = (typeof NAV_SECTIONS)[number]["id"];
