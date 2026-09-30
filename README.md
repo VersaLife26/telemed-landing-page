@@ -1,4 +1,4 @@
-# VersaLife landing page
+# VersaLife landing page 
 
 Public introduction to the telemedicine product: what a visit is, what you can do, and how booking works.
 
