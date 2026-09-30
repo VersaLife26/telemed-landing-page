@@ -12,20 +12,40 @@ export function SiteFooter() {
 
   return (
     <footer className="site-footer">
-      <div className="site-footer-inner">
+      <div className="site-footer-glow" aria-hidden />
+
+      <div className="site-footer-top">
         <div className="site-footer-brand">
           <a className="site-footer-mark" href="#top">
-            <img src="/logo.svg" alt="" width={32} height={34} />
+            <img src="/logo.svg" alt="" width={40} height={42} />
             <span>
-              VersaLife <strong>Health</strong>
+              Versa<span className="is-mint">Life</span>
             </span>
           </a>
+          <h2 className="site-footer-title">
+            A booked visit.
+            <em>Not a chat thread.</em>
+          </h2>
           <p className="site-footer-tagline">
-            Booked video visits for patients and doctors in Sri Lanka — with notes and prescriptions that stay on the
-            visit.
+            Video consultations for patients and doctors in Sri Lanka — with a named person, a quoted fee, and notes
+            that stay on the visit.
           </p>
         </div>
 
+        <div className="site-footer-ctas">
+          <a className="btn site-footer-cta-primary" href={`${PATIENT}/register`}>
+            Create a patient account
+            <span className="arrow" aria-hidden>
+              →
+            </span>
+          </a>
+          <a className="btn site-footer-cta-ghost" href={DOCTOR}>
+            Doctor workspace
+          </a>
+        </div>
+      </div>
+
+      <div className="site-footer-inner">
         <nav className="site-footer-nav" aria-label="On this page">
           <p className="site-footer-heading">On this page</p>
           <ul>
@@ -51,15 +71,20 @@ export function SiteFooter() {
             </li>
           </ul>
         </nav>
+
+        <div className="site-footer-nav">
+          <p className="site-footer-heading">Care</p>
+          <p className="site-footer-aside">
+            This page introduces the service. Care happens in the patient and doctor apps after you sign in.
+          </p>
+        </div>
       </div>
 
       <div className="site-footer-bottom">
-        <p className="site-footer-copy">
-          © {year} VersaLife Health. All rights reserved.
-        </p>
-        <p className="site-footer-note">
-          This site introduces the service. Medical care is delivered in the patient and doctor apps.
-        </p>
+        <p className="site-footer-copy">© {year} VersaLife Health</p>
+        <a className="site-footer-top-link" href="#top">
+          Back to top
+        </a>
       </div>
     </footer>
   );
