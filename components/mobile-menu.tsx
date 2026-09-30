@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { DOCTOR, PATIENT } from "@/lib/links";
+import { NAV_SECTIONS, activeSectionId } from "@/lib/nav-sections";
 
 const LINKS = [
   { href: "#top", label: "Home" },
@@ -36,10 +37,26 @@ function useMobileMenu() {
 
 export function MobileMenuProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>(NAV_SECTIONS[0].id);
   const panelId = useId();
 
   const close = useCallback(() => setOpen(false), []);
   const toggle = useCallback(() => setOpen((on) => !on), []);
+
+  useEffect(() => {
+    const sync = () => setActiveSection(activeSectionId());
+    sync();
+    window.addEventListener("scroll", sync, { passive: true });
+    const onSection = (event: Event) => {
+      const id = (event as CustomEvent<string>).detail;
+      if (typeof id === "string") setActiveSection(id);
+    };
+    window.addEventListener("versalife:section", onSection);
+    return () => {
+      window.removeEventListener("scroll", sync);
+      window.removeEventListener("versalife:section", onSection);
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -79,11 +96,16 @@ export function MobileMenuProvider({ children }: { children: ReactNode }) {
             </button>
           </div>
           <nav className="mobile-menu-nav" aria-label="Site">
-            {LINKS.map((link) => (
+            {LINKS.map((link) => {
+              const sectionId = link.href.replace("#", "");
+              const isSection = NAV_SECTIONS.some((s) => s.id === sectionId);
+              const isActive = isSection && activeSection === sectionId;
+              return (
               <a
                 key={link.href}
                 href={link.href}
-                className="mobile-menu-link"
+                className={isActive ? "mobile-menu-link is-active" : "mobile-menu-link"}
+                aria-current={isActive ? "location" : undefined}
                 onClick={(event) => {
                   event.preventDefault();
                   jump(link.href);
@@ -101,7 +123,8 @@ export function MobileMenuProvider({ children }: { children: ReactNode }) {
                   link.label
                 )}
               </a>
-            ))}
+            );
+            })}
           </nav>
           <div className="mobile-menu-actions">
             <a className="btn btn-ink mobile-menu-cta" href={`${PATIENT}/register`} onClick={close}>

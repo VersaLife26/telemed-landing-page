@@ -3,49 +3,21 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { MobileMenuTrigger } from "@/components/mobile-menu";
 import { DOCTOR, PATIENT } from "@/lib/links";
-
-const LINKS = [
-  { id: "what", href: "#what", label: "What it is" },
-  { id: "how", href: "#how", label: "How to use" },
-  { id: "why", href: "#why", label: "Why VersaLife", brand: true },
-  { id: "doctors", href: "#doctors", label: "For doctors" },
-] as const;
-
-/** Viewport line used to pick the current section (below fixed nav). */
-function sectionMarkerY() {
-  const nav = document.querySelector<HTMLElement>(".site-nav");
-  const navBottom = nav ? nav.getBoundingClientRect().bottom : 88;
-  return navBottom + Math.min(48, window.innerHeight * 0.06);
-}
-
-function activeSectionId() {
-  const marker = sectionMarkerY();
-  let current = LINKS[0].id;
-
-  for (const link of LINKS) {
-    const el = document.getElementById(link.id);
-    if (!el) continue;
-    const { top, bottom } = el.getBoundingClientRect();
-    if (top <= marker && bottom > marker) return link.id;
-    if (top <= marker) current = link.id;
-  }
-
-  return current;
-}
+import { NAV_SECTIONS, activeSectionId, type NavSectionId } from "@/lib/nav-sections";
 
 export function SiteNav() {
   const trackRef = useRef<HTMLDivElement>(null);
   const gliderRef = useRef<HTMLSpanElement>(null);
   const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
-  const activeRef = useRef(LINKS[0].id);
+  const activeRef = useRef<NavSectionId>(NAV_SECTIONS[0].id);
   const rafRef = useRef<number | null>(null);
 
-  const [active, setActive] = useState<string>(LINKS[0].id);
+  const [active, setActive] = useState<NavSectionId>(NAV_SECTIONS[0].id);
 
   const positionGlider = useCallback(() => {
     const track = trackRef.current;
     const glider = gliderRef.current;
-    const index = LINKS.findIndex((link) => link.id === activeRef.current);
+    const index = NAV_SECTIONS.findIndex((link) => link.id === activeRef.current);
     const link = linkRefs.current[index];
     if (!track || !glider || !link || index < 0) return;
 
@@ -54,6 +26,12 @@ export function SiteNav() {
     const x = linkBox.left - trackBox.left + track.scrollLeft;
     glider.style.width = `${linkBox.width}px`;
     glider.style.transform = `translate3d(${x}px, 0, 0)`;
+
+    if (window.matchMedia("(max-width: 800px)").matches) {
+      const pad = 8;
+      const scrollLeft = link.offsetLeft - (track.clientWidth - linkBox.width) / 2;
+      track.scrollTo({ left: Math.max(0, scrollLeft - pad), behavior: "smooth" });
+    }
   }, []);
 
   const syncFromScroll = useCallback(() => {
@@ -61,6 +39,7 @@ export function SiteNav() {
     if (next !== activeRef.current) {
       activeRef.current = next;
       setActive(next);
+      window.dispatchEvent(new CustomEvent("versalife:section", { detail: next }));
     } else {
       positionGlider();
     }
@@ -87,7 +66,7 @@ export function SiteNav() {
 
     const track = trackRef.current;
     const ro = track ? new ResizeObserver(schedule) : null;
-    ro?.observe(track);
+    if (track && ro) ro.observe(track);
 
     document.fonts?.ready.then(schedule);
 
@@ -107,8 +86,9 @@ export function SiteNav() {
     event.preventDefault();
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     target.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-    activeRef.current = id;
-    setActive(id);
+    activeRef.current = id as NavSectionId;
+    setActive(id as NavSectionId);
+    window.dispatchEvent(new CustomEvent("versalife:section", { detail: id }));
     requestAnimationFrame(() => positionGlider());
   };
 
@@ -121,7 +101,7 @@ export function SiteNav() {
 
         <nav className="site-nav-track" aria-label="On this page" ref={trackRef}>
           <span className="site-nav-glider" ref={gliderRef} aria-hidden />
-          {LINKS.map((link, i) => (
+          {NAV_SECTIONS.map((link, i) => (
             <a
               key={link.id}
               href={link.href}
