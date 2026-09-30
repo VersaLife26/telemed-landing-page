@@ -40,7 +40,7 @@ type Options = {
 };
 
 export function useScrollStory(root: RefObject<HTMLElement | null>, beatCount: number, options: Options) {
-  const { pinSelector, liveClass, stepVh = scrollStepVh(), scrub = 0.55, applyBeats = applyScrollBeats } = options;
+  const { pinSelector, liveClass, stepVh = scrollStepVh(), scrub = true, applyBeats = applyScrollBeats } = options;
   const applyRef = useRef(applyBeats);
   applyRef.current = applyBeats;
 
@@ -76,14 +76,6 @@ export function useScrollStory(root: RefObject<HTMLElement | null>, beatCount: n
         },
         onUpdate: (self) => runBeats(self.progress),
       };
-      if (beatCount > 1) {
-        pinSt.snap = {
-          snapTo: (value) => Math.round(value * (beatCount - 1)) / (beatCount - 1),
-          duration: { min: 0.12, max: 0.28 },
-          delay: 0,
-          ease: "power2.out",
-        };
-      }
       ScrollTrigger.create(pinSt);
     }, node);
 

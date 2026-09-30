@@ -5,7 +5,6 @@ const STORY_LINKS = [
   { href: "#how", label: "How to use" },
   { href: "#why", label: "Why VersaLife" },
   { href: "#doctors", label: "For doctors" },
-  { href: "#faq", label: "Questions" },
 ];
 
 export function SiteFooter() {

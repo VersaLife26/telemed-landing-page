@@ -125,15 +125,9 @@ export function WhatSection() {
         start: "top top",
         end: `+=${Math.round(count * step)}%`,
         pin: ".what-pin",
-        scrub: 0.65,
+        scrub: true,
         anticipatePin: 1,
         invalidateOnRefresh: true,
-        snap: {
-          snapTo: (value) => Math.round(value * (count - 1)) / (count - 1),
-          duration: { min: 0.12, max: 0.28 },
-          delay: 0,
-          ease: "power2.out",
-        },
         onEnter: () => {
           node.classList.add("what--live");
           applyProgress(node, 0);

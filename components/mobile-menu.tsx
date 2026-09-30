@@ -17,7 +17,6 @@ const LINKS = [
   { href: "#how", label: "How to use" },
   { href: "#why", label: "Why VersaLife", brand: true },
   { href: "#doctors", label: "For doctors" },
-  { href: "#faq", label: "Questions" },
   { href: "#start", label: "Start" },
 ] as const;
 

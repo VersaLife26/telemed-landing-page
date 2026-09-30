@@ -3,9 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { DOCTOR, PATIENT } from "@/lib/links";
 import { waitForSplashDone } from "@/lib/splash";
-import { MobileMenuTrigger } from "@/components/mobile-menu";
 import { scrollStepVh } from "@/lib/scroll-step-vh";
 import { HERO_VIDEO } from "@/lib/warm-videos";
 
@@ -173,31 +171,6 @@ export function HeroSection() {
   return (
     <section className="hero" id="top" ref={root}>
       <div className="hero-pin">
-        <header className="nav">
-          <a className="mark" href="#top" aria-label="VersaLife">
-            <img src="/logo.svg" alt="" width={40} height={42} />
-          </a>
-          <nav className="nav-pills" aria-label="Page">
-            <a className="is-current" href="#top">
-              Home
-            </a>
-            <a href="#what">What it is</a>
-            <a href="#how">How to use</a>
-            <a href="#why">Why VersaLife</a>
-          </nav>
-          <div className="nav-end">
-            <a className="text-link" href="#faq">
-              FAQ
-            </a>
-            <a className="text-link" href={DOCTOR}>
-              Doctor sign in
-            </a>
-            <a className="btn btn-light" href={`${PATIENT}/login`}>
-              Log in
-            </a>
-            <MobileMenuTrigger className="mobile-menu-trigger nav-menu-trigger" />
-          </div>
-        </header>
         <div className="hero-film" ref={filmRef}>
           <video
             ref={videoRef}

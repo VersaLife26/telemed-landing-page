@@ -8,9 +8,8 @@ import { WhatSection } from "@/components/sections/what-section";
 import { HowSection } from "@/components/sections/how-section";
 import { WhySection } from "@/components/sections/why-section";
 import { DoctorsSection } from "@/components/sections/doctors-section";
-import { FaqSection } from "@/components/sections/faq-section";
 import { StartSection } from "@/components/sections/start-section";
-import { ChaptersNav } from "@/components/chapters-nav";
+import { SiteNav } from "@/components/site-nav";
 import { MobileMenuProvider } from "@/components/mobile-menu";
 import { HeroSplash } from "@/components/hero-splash";
 import { SiteFooter } from "@/components/site-footer";
@@ -41,13 +40,12 @@ export function Landing() {
   return (
     <MobileMenuProvider>
       <HeroSplash />
+      <SiteNav />
       <HeroSection />
-      <ChaptersNav />
       <WhatSection />
       <HowSection />
       <WhySection />
       <DoctorsSection />
-      <FaqSection />
       <StartSection />
       <SiteFooter />
     </MobileMenuProvider>
