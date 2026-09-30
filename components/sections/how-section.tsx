@@ -49,6 +49,15 @@ function progressForStep(index: number) {
   return (index + 0.18) / STEP_COUNT;
 }
 
+const STEP_SWAP = 0.38;
+
+function stepFromProgress(progress: number) {
+  const scaled = progress * STEP_COUNT;
+  const index = clampStep(Math.floor(Math.min(scaled, STEP_COUNT - 0.001)));
+  const blend = scaled - index;
+  return blend >= STEP_SWAP && index < STEP_COUNT - 1 ? index + 1 : index;
+}
+
 export function HowSection() {
   const root = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -178,6 +187,46 @@ export function HowSection() {
     videosRef.current.forEach((video) => video.pause());
   }, []);
 
+  const bootstrapHow = useCallback(
+    (index: number) => {
+      const node = root.current;
+      if (!node) return;
+      node.classList.add("how--live", "how--steps-visible");
+      stepRef.current = index;
+      setStep(index);
+      setDragPx(0);
+
+      const clips = node.querySelectorAll<HTMLElement>(".clip");
+      clips.forEach((clip, i) => {
+        const on = i === index;
+        clip.classList.toggle("is-on", on);
+        gsap.set(clip, {
+          opacity: on ? 1 : 0,
+          scale: 1,
+          visibility: on ? "visible" : "hidden",
+        });
+      });
+
+      primeClip(clips[index]);
+      prefetchClip(clips[index + 1]);
+      videosRef.current.forEach((video, i) => {
+        if (i === index) video.play().catch(() => undefined);
+        else video.pause();
+      });
+
+      waitForClipReady(
+        node,
+        index,
+        () => {
+          const active = clips[index];
+          if (active) gsap.set(active, { opacity: 1, scale: 1, visibility: "visible" });
+        },
+        true,
+      );
+    },
+    [waitForClipReady],
+  );
+
   useEffect(() => {
     const node = root.current;
     if (!node) return;
@@ -210,6 +259,7 @@ export function HowSection() {
         prefetchClip(clips[0]);
         prefetchClip(clips[1]);
       };
+
       ScrollTrigger.create({
         trigger: node,
         start: "top bottom",
@@ -221,31 +271,34 @@ export function HowSection() {
       scrollStRef.current = ScrollTrigger.create({
         trigger: node,
         start: "top top",
-        end: `+=${Math.round(STEP_COUNT * scrollStepVh() * 1.02)}%`,
+        end: `+=${Math.round(STEP_COUNT * scrollStepVh())}%`,
         pin: ".how-pin",
-        scrub: 0.9,
+        scrub: 0.65,
         anticipatePin: 1,
-        onEnter: () => {
-          node.classList.add("how--live");
-          const clips = node.querySelectorAll<HTMLElement>(".clip");
-          primeClip(clips[0]);
-          prefetchClip(clips[1]);
-          setActiveStep(0, "nav");
+        invalidateOnRefresh: true,
+        snap: {
+          snapTo: (value) => Math.round(value * (STEP_COUNT - 1)) / (STEP_COUNT - 1),
+          duration: { min: 0.12, max: 0.28 },
+          delay: 0,
+          ease: "power2.out",
         },
-        onLeaveBack: () => resetHow(),
-        onLeave: () => resetHow(),
+        onEnter: () => bootstrapHow(stepRef.current >= 0 ? stepRef.current : 0),
+        onToggle: (self) => node.classList.toggle("is-pinned", self.isActive),
+        onLeaveBack: () => {
+          node.classList.remove("is-pinned");
+          resetHow();
+        },
         onUpdate: (self) => {
           if (!self.isActive || fromScrollRef.current || dragRef.current.active) return;
-          const scaled = self.progress * STEP_COUNT;
-          const index = clampStep(Math.floor(Math.min(scaled, STEP_COUNT - 0.001)));
-          if (index !== stepRef.current) setActiveStep(index, "scroll");
-          else updateProgressUi(node, index);
+          const displayIndex = stepFromProgress(self.progress);
+          if (displayIndex !== stepRef.current) setActiveStep(displayIndex, "scroll");
+          else updateProgressUi(node, displayIndex);
         },
       });
     }, node);
 
     return () => ctx.revert();
-  }, [resetHow, setActiveStep, updateProgressUi, waitForClipReady]);
+  }, [bootstrapHow, resetHow, setActiveStep, updateProgressUi, waitForClipReady]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {

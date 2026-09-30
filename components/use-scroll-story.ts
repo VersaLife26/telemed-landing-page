@@ -3,33 +3,29 @@
 import { type RefObject, useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { beatDisplayIndex } from "@/lib/scroll-beat-progress";
 import { scrollStepVh } from "@/lib/scroll-step-vh";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function applyScrollBeats(node: HTMLElement, progress: number, beatCount: number) {
-  const scaled = progress * beatCount;
-  const index = Math.min(beatCount - 1, Math.max(0, Math.floor(Math.min(scaled, beatCount - 0.001))));
-  const blend = scaled - index;
+  const displayIndex = beatDisplayIndex(progress, beatCount);
 
   const beats = node.querySelectorAll<HTMLElement>(".story-beat");
   const counter = node.querySelector<HTMLElement>(".story-step-index");
 
   beats.forEach((beat, i) => {
-    let opacity = 0;
-    let y = 28;
-    if (i === index) {
-      opacity = 1 - blend;
-      y = -blend * 20;
-    } else if (i === index + 1) {
-      opacity = blend;
-      y = 28 * (1 - blend);
-    }
-    gsap.set(beat, { opacity, y, pointerEvents: opacity > 0.5 ? "auto" : "none" });
-    beat.setAttribute("aria-hidden", opacity < 0.45 ? "true" : "false");
+    const on = i === displayIndex;
+    gsap.set(beat, {
+      opacity: on ? 1 : 0,
+      y: 0,
+      visibility: on ? "visible" : "hidden",
+      pointerEvents: on ? "auto" : "none",
+    });
+    beat.setAttribute("aria-hidden", on ? "false" : "true");
   });
 
-  if (counter) counter.textContent = `0${index + 1} / 0${beatCount}`;
+  if (counter) counter.textContent = `0${displayIndex + 1} / 0${beatCount}`;
 }
 
 type ApplyBeats = (node: HTMLElement, progress: number, beatCount: number) => void;
@@ -44,7 +40,7 @@ type Options = {
 };
 
 export function useScrollStory(root: RefObject<HTMLElement | null>, beatCount: number, options: Options) {
-  const { pinSelector, liveClass, stepVh = scrollStepVh(), scrub = 0.85, applyBeats = applyScrollBeats } = options;
+  const { pinSelector, liveClass, stepVh = scrollStepVh(), scrub = 0.55, applyBeats = applyScrollBeats } = options;
   const applyRef = useRef(applyBeats);
   applyRef.current = applyBeats;
 
@@ -55,27 +51,40 @@ export function useScrollStory(root: RefObject<HTMLElement | null>, beatCount: n
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (reduce) {
-      node.classList.add(liveClass, "story--media-ready");
+      node.classList.add("story--live", liveClass, "story--media-ready");
       runBeats(1);
       return;
     }
 
     const ctx = gsap.context(() => {
-      ScrollTrigger.create({
+      const pinSt: ScrollTrigger.Vars = {
         trigger: node,
         start: "top top",
         end: `+=${Math.round(beatCount * stepVh)}%`,
         pin: pinSelector,
         scrub,
         anticipatePin: 1,
-        onEnter: () => node.classList.add(liveClass),
-        onLeaveBack: () => {
-          node.classList.remove(liveClass);
+        invalidateOnRefresh: true,
+        onEnter: () => {
+          node.classList.add("story--live", liveClass);
           runBeats(0);
         },
-        onLeave: () => node.classList.remove(liveClass),
+        onToggle: (self) => node.classList.toggle("is-pinned", self.isActive),
+        onLeaveBack: () => {
+          node.classList.remove("is-pinned", "story--live", liveClass);
+          runBeats(0);
+        },
         onUpdate: (self) => runBeats(self.progress),
-      });
+      };
+      if (beatCount > 1) {
+        pinSt.snap = {
+          snapTo: (value) => Math.round(value * (beatCount - 1)) / (beatCount - 1),
+          duration: { min: 0.12, max: 0.28 },
+          delay: 0,
+          ease: "power2.out",
+        };
+      }
+      ScrollTrigger.create(pinSt);
     }, node);
 
     return () => ctx.revert();

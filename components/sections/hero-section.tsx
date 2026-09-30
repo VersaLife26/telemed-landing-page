@@ -158,6 +158,8 @@ export function HeroSection() {
           scrub: 0.65,
           pin: ".hero-pin",
           anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onToggle: (self) => node.classList.toggle("is-pinned", self.isActive),
         },
       }).to(".hero-film", { scale: 0.84, borderRadius: 32, duration: 0.55 });
     }, node);

@@ -39,8 +39,8 @@ function applyProgress(node: HTMLElement, progress: number) {
   const scaled = progress * count;
   const index = Math.min(count - 1, Math.max(0, Math.floor(Math.min(scaled, count - 0.001))));
   const blend = scaled - index;
-  const mobile = window.matchMedia("(max-width: 800px)").matches;
-  const swap = mobile ? 0.42 : 1;
+  /** Hard swap — next frame/image appears as soon as you leave the first half of the beat (no long empty crossfade). */
+  const swap = 0.38;
 
   const frames = node.querySelectorAll<HTMLElement>(".what-frame");
   const images = node.querySelectorAll<HTMLElement>(".photo-seq img");
@@ -48,71 +48,40 @@ function applyProgress(node: HTMLElement, progress: number) {
   const rail = node.querySelector<HTMLElement>(".what-rail-fill");
   const counter = node.querySelector<HTMLElement>(".what-counter");
 
+  const displayIndex = blend >= swap && index < count - 1 ? index + 1 : index;
+
   frames.forEach((frame, i) => {
-    let opacity = 0;
-    let y = mobile ? 0 : 40;
-
-    if (mobile) {
-      if (i === index) {
-        opacity = blend < swap ? 1 : 0;
-      } else if (i === index + 1) {
-        opacity = blend >= swap ? 1 : 0;
-      }
-    } else if (i === index) {
-      opacity = 1 - blend;
-      y = -blend * 32;
-    } else if (i === index + 1) {
-      opacity = blend;
-      y = 40 * (1 - blend);
-    }
-
-    const visible = opacity > 0.02;
+    const on = i === displayIndex;
     gsap.set(frame, {
-      opacity,
-      y,
-      visibility: visible ? "visible" : "hidden",
-      pointerEvents: opacity > 0.45 ? "auto" : "none",
+      opacity: on ? 1 : 0,
+      y: 0,
+      visibility: on ? "visible" : "hidden",
+      pointerEvents: on ? "auto" : "none",
     });
-    frame.setAttribute("aria-hidden", visible ? "false" : "true");
+    frame.setAttribute("aria-hidden", on ? "false" : "true");
   });
 
   images.forEach((img, i) => {
-    let opacity = 0;
-    let scale = 1.08;
-    let x = mobile ? 0 : 48;
-
-    if (mobile) {
-      if (i === index) opacity = blend < swap ? 1 : 0;
-      else if (i === index + 1) opacity = blend >= swap ? 1 : 0;
-      scale = 1;
-    } else if (i === index) {
-      opacity = 1 - blend * 0.55;
-      scale = 1 + blend * 0.04;
-      x = blend * 24;
-    } else if (i === index + 1) {
-      opacity = blend;
-      scale = 1.08 - blend * 0.08;
-      x = 48 * (1 - blend);
-    } else if (i < index) {
-      opacity = 0;
-      scale = 1.02;
-      x = -20;
-    }
-
-    gsap.set(img, { opacity, scale, x, visibility: opacity > 0.02 ? "visible" : "hidden" });
+    const on = i === displayIndex;
+    gsap.set(img, {
+      opacity: on ? 1 : 0,
+      scale: 1,
+      x: 0,
+      visibility: on ? "visible" : "hidden",
+    });
   });
 
   dots.forEach((dot, i) => {
-    const on = i === index;
-    const next = i === index + 1;
+    const on = i === displayIndex;
     gsap.set(dot, {
-      scale: on ? 1 : next ? 0.85 + blend * 0.15 : 0.85,
-      opacity: on ? 1 : next ? 0.45 + blend * 0.55 : 0.35,
+      scale: on ? 1 : 0.85,
+      opacity: on ? 1 : 0.35,
     });
   });
 
   if (rail) {
-    if (mobile) {
+    const horizontal = window.matchMedia("(max-width: 800px)").matches;
+    if (horizontal) {
       gsap.set(rail, {
         scaleX: Math.max(0.08, progress),
         scaleY: 1,
@@ -126,15 +95,12 @@ function applyProgress(node: HTMLElement, progress: number) {
       });
     }
   }
-  if (counter) counter.textContent = `0${index + 1}`;
+  if (counter) counter.textContent = `0${displayIndex + 1}`;
 }
 
 function resetWhat(node: HTMLElement) {
   node.classList.remove("what--live");
   applyProgress(node, 0);
-  node.querySelectorAll<HTMLElement>(".photo-seq img").forEach((img) => {
-    gsap.set(img, { visibility: "hidden", opacity: 0 });
-  });
 }
 
 export function WhatSection() {
@@ -143,26 +109,40 @@ export function WhatSection() {
   useEffect(() => {
     const node = root.current;
     if (!node) return;
+
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) {
-      node.classList.add("what--live");
       applyProgress(node, 1);
       return;
     }
 
     const ctx = gsap.context(() => {
+      const count = FRAMES.length;
+      const step = scrollStepVh();
+
       ScrollTrigger.create({
         trigger: node,
         start: "top top",
-        end: `+=${Math.round(FRAMES.length * scrollStepVh() * 1.02)}%`,
+        end: `+=${Math.round(count * step)}%`,
         pin: ".what-pin",
-        scrub: 0.85,
+        scrub: 0.65,
         anticipatePin: 1,
+        invalidateOnRefresh: true,
+        snap: {
+          snapTo: (value) => Math.round(value * (count - 1)) / (count - 1),
+          duration: { min: 0.12, max: 0.28 },
+          delay: 0,
+          ease: "power2.out",
+        },
         onEnter: () => {
           node.classList.add("what--live");
           applyProgress(node, 0);
         },
-        onLeaveBack: () => resetWhat(node),
+        onToggle: (self) => node.classList.toggle("is-pinned", self.isActive),
+        onLeaveBack: () => {
+          node.classList.remove("is-pinned");
+          resetWhat(node);
+        },
         onUpdate: (self) => {
           if (!self.isActive) return;
           applyProgress(node, self.progress);
@@ -204,13 +184,14 @@ export function WhatSection() {
           <div className="what-visual">
             <div className="what-visual-glow" aria-hidden />
             <div className="photo-seq">
-              {FRAMES.map((frame) => (
+              {FRAMES.map((frame, i) => (
                 <img
                   key={frame.src}
                   src={frame.src}
                   alt={frame.alt}
-                  loading="lazy"
+                  loading={i < 2 ? "eager" : "lazy"}
                   decoding="async"
+                  fetchPriority={i === 0 ? "high" : i === 1 ? "high" : "auto"}
                   onError={(event) => {
                     event.currentTarget.src = frame.fallback;
                   }}
