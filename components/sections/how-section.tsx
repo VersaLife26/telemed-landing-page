@@ -80,7 +80,7 @@ export function HowSection() {
     const proxy = { t: 0 };
     maskTweenRef.current = gsap.to(proxy, {
       t: 1,
-      duration: 1.1,
+      duration: 0.85,
       ease: "power3.out",
       overwrite: true,
       onUpdate() {
@@ -158,7 +158,7 @@ export function HowSection() {
           gsap.to(active, {
             opacity: 1,
             scale: 1,
-            duration: 0.45,
+            duration: 0.32,
             ease: "power2.out",
             visibility: "visible",
           });

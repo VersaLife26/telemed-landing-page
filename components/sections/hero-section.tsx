@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { waitForSplashDone } from "@/lib/splash";
-import { scrollStepVh } from "@/lib/scroll-step-vh";
+import { scrollHeroPinVh } from "@/lib/scroll-step-vh";
 import { HERO_VIDEO } from "@/lib/warm-videos";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -152,8 +152,8 @@ export function HeroSection() {
         scrollTrigger: {
           trigger: node,
           start: "top top",
-          end: `+=${Math.round(scrollStepVh() * 1.95)}%`,
-          scrub: 0.65,
+          end: `+=${scrollHeroPinVh()}%`,
+          scrub: 0.45,
           pin: ".hero-pin",
           anticipatePin: 1,
           invalidateOnRefresh: true,

@@ -33,7 +33,7 @@ type ApplyBeats = (node: HTMLElement, progress: number, beatCount: number) => vo
 type Options = {
   pinSelector: string;
   liveClass: string;
-  /** Viewport scroll length multiplier per beat (default 72). */
+  /** Viewport scroll length multiplier per beat (see scrollStepVh). */
   stepVh?: number;
   scrub?: number;
   applyBeats?: ApplyBeats;

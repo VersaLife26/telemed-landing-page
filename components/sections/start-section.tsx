@@ -32,8 +32,8 @@ export function StartSection() {
           gsap.to(items, {
             opacity: 1,
             y: 0,
-            duration: 0.95,
-            stagger: 0.12,
+            duration: 0.65,
+            stagger: 0.08,
             ease: "power3.out",
           });
         },
