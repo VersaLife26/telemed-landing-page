@@ -127,8 +127,11 @@ export function MobileMenuProvider({ children }: { children: ReactNode }) {
             })}
           </nav>
           <div className="mobile-menu-actions">
-            <a className="btn btn-ink mobile-menu-cta" href={`${PATIENT}/register`} onClick={close}>
-              Create patient account
+            <a className="btn btn-chapters mobile-menu-cta" href={`${PATIENT}/register`} onClick={close}>
+              Get started
+              <span className="arrow" aria-hidden>
+                →
+              </span>
             </a>
             <a className="btn btn-quiet mobile-menu-cta" href={`${PATIENT}/login`} onClick={close}>
               Patient log in

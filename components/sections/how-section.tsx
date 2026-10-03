@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useMotionValue } from "framer-motion";
 import { ScrollVideo, prefetchClip, primeClip } from "@/components/scroll-video";
+import { RevealImageMask } from "@/components/ui/reveal-image-mask";
 import { scrollStepVh } from "@/lib/scroll-step-vh";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -65,6 +67,27 @@ export function HowSection() {
   const fromScrollRef = useRef(false);
 
   const [step, setStep] = useState(0);
+  const maskProgress = useMotionValue(0);
+  const maskTweenRef = useRef<gsap.core.Tween | null>(null);
+
+  const playMaskReveal = useCallback(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      maskProgress.set(1);
+      return;
+    }
+    maskTweenRef.current?.kill();
+    maskProgress.set(0);
+    const proxy = { t: 0 };
+    maskTweenRef.current = gsap.to(proxy, {
+      t: 1,
+      duration: 1.1,
+      ease: "power3.out",
+      overwrite: true,
+      onUpdate() {
+        maskProgress.set(proxy.t);
+      },
+    });
+  }, [maskProgress]);
 
   const waitForClipReady = useCallback(
     (node: HTMLElement, index: number, onReady: () => void, keepUi = false) => {
@@ -107,6 +130,7 @@ export function HowSection() {
         node.classList.add("how--live", "how--steps-visible");
       }
       setStep(index);
+      playMaskReveal();
 
       const clips = node.querySelectorAll<HTMLElement>(".clip");
       clips.forEach((clip, i) => {
@@ -155,7 +179,7 @@ export function HowSection() {
         });
       }
     },
-    [waitForClipReady],
+    [playMaskReveal, waitForClipReady],
   );
 
   const resetHow = useCallback(() => {
@@ -169,7 +193,9 @@ export function HowSection() {
       clip.classList.remove("is-on");
     });
     videosRef.current.forEach((video) => video.pause());
-  }, []);
+    maskTweenRef.current?.kill();
+    maskProgress.set(0);
+  }, [maskProgress]);
 
   const bootstrapHow = useCallback(
     (index: number) => {
@@ -178,6 +204,7 @@ export function HowSection() {
       node.classList.add("how--live", "how--steps-visible");
       stepRef.current = index;
       setStep(index);
+      playMaskReveal();
 
       const clips = node.querySelectorAll<HTMLElement>(".clip");
       clips.forEach((clip, i) => {
@@ -207,7 +234,7 @@ export function HowSection() {
         true,
       );
     },
-    [waitForClipReady],
+    [playMaskReveal, waitForClipReady],
   );
 
   useEffect(() => {
@@ -216,6 +243,7 @@ export function HowSection() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (reduce) {
+      maskProgress.set(1);
       node.classList.add("how--live", "how--media-ready", "how--steps-visible");
       videosRef.current = gsap.utils.toArray<HTMLVideoElement>(".clip video");
       setStep(STEP_COUNT - 1);
@@ -272,7 +300,10 @@ export function HowSection() {
       });
     }, node);
 
-    return () => ctx.revert();
+    return () => {
+      maskTweenRef.current?.kill();
+      ctx.revert();
+    };
   }, [bootstrapHow, resetHow, setActiveStep, waitForClipReady]);
 
   useEffect(() => {
@@ -291,9 +322,11 @@ export function HowSection() {
         <div className="how-split">
           <div className="how-visual">
             <div className="how-media-frame">
-              <div className="how-media">
-                <ScrollVideo clips={CLIPS} />
-              </div>
+              <RevealImageMask shape="rounded" progress={maskProgress} className="how-reveal-mask">
+                <div className="how-media">
+                  <ScrollVideo clips={CLIPS} />
+                </div>
+              </RevealImageMask>
             </div>
           </div>
 
