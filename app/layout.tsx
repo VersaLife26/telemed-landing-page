@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   title: "VersaLife — book a doctor visit",
   description:
     "VersaLife is a telemedicine visit: choose a doctor, say who the appointment is for, join the video call, and keep the notes and prescription.",
+  metadataBase: new URL("https://telemedicine.versalifehealth.com"),
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
