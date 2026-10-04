@@ -17,10 +17,19 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "VersaLife — book a doctor visit",
+  title: "VersaLife Telemedicine",
   description:
     "VersaLife is a telemedicine visit: choose a doctor, say who the appointment is for, join the video call, and keep the notes and prescription.",
   metadataBase: new URL("https://telemedicine.versalifehealth.com"),
+  icons: {
+    icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/logo.svg", type: "image/svg+xml" }],
+  },
+  openGraph: {
+    title: "VersaLife Telemedicine",
+    description:
+      "VersaLife is a telemedicine visit: choose a doctor, say who the appointment is for, join the video call, and keep the notes and prescription.",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
