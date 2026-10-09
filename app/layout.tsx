@@ -21,6 +21,12 @@ export const metadata: Metadata = {
   description:
     "VersaLife is a telemedicine visit: choose a doctor, say who the appointment is for, join the video call, and keep the notes and prescription.",
   metadataBase: new URL("https://telemedicine.versalifehealth.com"),
+  alternates: { canonical: "/" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "48x48" },
